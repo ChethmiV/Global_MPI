@@ -15,3 +15,4 @@ Designed for the Global Conference on Sustainability to provide policymakers and
 <em>Aligns with UN Sustainable Development Goal (SDG) 1: End poverty in all its forms everywhere.</em>
 </p>
 """, unsafe_allow_html=True)
+
