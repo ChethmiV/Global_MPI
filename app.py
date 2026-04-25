@@ -82,3 +82,17 @@ mpi_threshold = st.sidebar.slider("Minimum MPI Threshold", min_value=min_mpi, ma
 min_intensity = float(df['Intensity of Deprivation'].min())
 max_intensity = float(df['Intensity of Deprivation'].max())
 selected_intensity = st.sidebar.slider("Minimum Intensity (%)", min_value=min_intensity, max_value=max_intensity, value=min_intensity, key="intensity_slider")
+
+# --- Reset Button ---
+def reset_filters():
+    st.session_state["country_select"] = "All"
+    st.session_state["region_select"] = "All"
+    st.session_state["risk_category"] = ["Extreme", "High", "Moderate"]
+    st.session_state["core_metric"] = "MPI"
+    st.session_state["top_n_slider"] = 10
+    st.session_state["mpi_slider"] = float(df['MPI'].min())
+    st.session_state["intensity_slider"] = float(df['Intensity of Deprivation'].min())
+
+st.sidebar.button("🔄 Reset All Filters", on_click=reset_filters, use_container_width=True, type="primary")
+st.sidebar.divider()
+st.sidebar.info("Developed for the 5DATA004C Data Science Project Lifecycle coursework.")
