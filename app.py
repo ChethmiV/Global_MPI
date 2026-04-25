@@ -26,3 +26,59 @@ def load_data():
     return df
 
 df = load_data()
+
+# ==========================================
+# SIDEBAR: THE ULTIMATE CONTROL PANEL
+# ==========================================
+
+# --- View Mode Selector ---
+st.sidebar.subheader(" Dashboard View")
+view_mode = st.sidebar.radio("Select View Mode", ["Executive View", "Detailed Analysis"])
+
+st.sidebar.subheader("🔻 Filters")
+
+# 1. Country Filter
+country_list = ['All'] + sorted(df['Country'].dropna().unique().tolist())
+selected_country = st.sidebar.selectbox("Select Country", country_list, key="country_select")
+
+# 2. Dynamic Region Filter
+if selected_country != 'All':
+    region_options = ['All'] + sorted(df[df['Country'] == selected_country]['Admin 1 Name'].dropna().unique().tolist())
+else:
+    region_options = ['All'] + sorted(df['Admin 1 Name'].dropna().unique().tolist())
+selected_region = st.sidebar.selectbox("Select Region", region_options, key="region_select")
+
+# 3. Poverty Category Multiselect
+category = st.sidebar.multiselect(
+    "Poverty Risk Level",
+    ["Extreme", "High", "Moderate"],
+    default=["Extreme", "High", "Moderate"],
+    help="Filter by the severity classification of the MPI.",
+    key="risk_category"
+)
+
+# --- Analysis Settings ---
+st.sidebar.subheader("📊 Analysis Settings")
+
+# 4. Core Metric Selector
+selected_metric = st.sidebar.selectbox(
+    "Select Key Metric",
+    ["MPI", "Headcount Ratio", "Intensity of Deprivation", "Vulnerable to Poverty", "In Severe Poverty"],
+    key="core_metric"
+)
+
+# 5. Top N Selector
+top_n = st.sidebar.slider("Top N Regions to Display", 5, 50, 10, 5, key="top_n_slider")
+
+# --- Advanced Thresholds ---
+st.sidebar.subheader("⚙️ Advanced")
+
+# 6. Minimum MPI Threshold
+min_mpi = float(df['MPI'].min())
+max_mpi = float(df['MPI'].max())
+mpi_threshold = st.sidebar.slider("Minimum MPI Threshold", min_value=min_mpi, max_value=max_mpi, value=min_mpi, key="mpi_slider")
+
+# 7. Intensity Threshold
+min_intensity = float(df['Intensity of Deprivation'].min())
+max_intensity = float(df['Intensity of Deprivation'].max())
+selected_intensity = st.sidebar.slider("Minimum Intensity (%)", min_value=min_intensity, max_value=max_intensity, value=min_intensity, key="intensity_slider")
