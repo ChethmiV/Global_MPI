@@ -16,3 +16,13 @@ Designed for the Global Conference on Sustainability to provide policymakers and
 </p>
 """, unsafe_allow_html=True)
 
+# --- Data Loading & Preprocessing ---
+@st.cache_data
+def load_data():
+    df = pd.read_csv('cleaned_global_mpi.csv')
+    df['Poverty Risk Level'] = df['MPI'].apply(
+        lambda x: 'Extreme' if x > 0.4 else ('High' if x > 0.2 else 'Moderate')
+    )
+    return df
+
+df = load_data()
