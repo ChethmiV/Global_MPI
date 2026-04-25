@@ -96,3 +96,19 @@ def reset_filters():
 st.sidebar.button("🔄 Reset All Filters", on_click=reset_filters, use_container_width=True, type="primary")
 st.sidebar.divider()
 st.sidebar.info("Developed for the 5DATA004C Data Science Project Lifecycle coursework.")
+
+# =========================================
+# APPLY ALL SIDEBAR FILTERS LOGIC
+# =========================================
+filtered_df = df.copy()
+
+if selected_country != 'All':
+    filtered_df = filtered_df[filtered_df['Country'] == selected_country]
+if selected_region != 'All':
+    filtered_df = filtered_df[filtered_df['Admin 1 Name'] == selected_region]
+
+filtered_df = filtered_df[filtered_df['Poverty Risk Level'].isin(category)]
+filtered_df = filtered_df[filtered_df['MPI'] >= mpi_threshold]
+filtered_df = filtered_df[filtered_df['Intensity of Deprivation'] >= selected_intensity]
+
+
