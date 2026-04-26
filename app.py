@@ -58,7 +58,7 @@ category = st.sidebar.multiselect(
 )
 
 # --- Analysis Settings ---
-st.sidebar.subheader("📊 Analysis Settings")
+st.sidebar.subheader("Analysis Settings")
 
 # 4. Core Metric Selector
 selected_metric = st.sidebar.selectbox(
@@ -95,7 +95,7 @@ def reset_filters():
 
 st.sidebar.button("🔄 Reset All Filters", on_click=reset_filters, use_container_width=True, type="primary")
 st.sidebar.divider()
-st.sidebar.info("Developed for the 5DATA004C Data Science Project Lifecycle coursework.")
+st.sidebar.info("Done by Chethmi Narayange. Data Source: Global MPI Dataset (2024)")
 
 # =========================================
 # APPLY ALL SIDEBAR FILTERS LOGIC
@@ -112,3 +112,36 @@ filtered_df = filtered_df[filtered_df['MPI'] >= mpi_threshold]
 filtered_df = filtered_df[filtered_df['Intensity of Deprivation'] >= selected_intensity]
 
 
+# ==========================================
+# MAIN DASHBOARD RENDER
+# ==========================================
+
+if view_mode == "Executive View":
+    # ----------------------------------------
+    # ONE-PAGE EXECUTIVE LAYOUT (COMPRESSED GRID)
+    # ----------------------------------------
+    
+    # CSS UI Polish: Reduce padding and hide Streamlit header
+    st.subheader("High-Level Overview")
+    st.markdown("""
+    <style>
+    .block-container {
+
+        padding-bottom: 1rem;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+
+    # Row 1 -> KPIs
+    col1, col2, col3, col4 = st.columns(4)
+    total_regions = len(filtered_df)
+    avg_metric = filtered_df[selected_metric].mean() if not filtered_df.empty else 0
+    avg_severe = filtered_df['In Severe Poverty'].mean() if not filtered_df.empty else 0
+    avg_vuln = filtered_df['Vulnerable to Poverty'].mean() if not filtered_df.empty else 0
+
+    col1.metric("Regions Selected", f"{total_regions}")
+    col2.metric(f"Avg {selected_metric}", f"{avg_metric:.4f}")
+    col3.metric("Avg Severe Poverty", f"{avg_severe:.1f}%")
+    col4.metric("Avg Vulnerability", f"{avg_vuln:.1f}%")
+
+    st.markdown("<br>", unsafe_allow_html=True)
