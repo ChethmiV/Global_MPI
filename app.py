@@ -23,6 +23,8 @@ def load_data():
     df['Poverty Risk Level'] = df['MPI'].apply(
         lambda x: 'Extreme' if x > 0.4 else ('High' if x > 0.2 else 'Moderate')
     )
+    # Extract the Year from the Start Date
+    df['Year'] = pd.to_datetime(df['Start Date']).dt.year
     return df
 
 df = load_data()
@@ -55,6 +57,17 @@ category = st.sidebar.multiselect(
     default=["Extreme", "High", "Moderate"],
     help="Filter by the severity classification of the MPI.",
     key="risk_category"
+)
+# Year Filter
+min_year = int(df['Year'].min())
+max_year = int(df['Year'].max())
+selected_years = st.sidebar.slider(
+    "Select Survey Year Range",
+    min_value=min_year,
+    max_value=max_year,
+    value=(min_year, max_year),
+    help="Filter by the year the poverty survey was conducted.",
+    key="year_slider"
 )
 
 # --- Analysis Settings ---
@@ -92,6 +105,11 @@ def reset_filters():
     st.session_state["top_n_slider"] = 10
     st.session_state["mpi_slider"] = float(df['MPI'].min())
     st.session_state["intensity_slider"] = float(df['Intensity of Deprivation'].min())
+    
+    # Reset the new year slider to its full range
+    min_year = int(df['Year'].min())
+    max_year = int(df['Year'].max())
+    st.session_state["year_slider"] = (min_year, max_year)
 
 st.sidebar.button("🔄 Reset All Filters", on_click=reset_filters, use_container_width=True, type="primary")
 st.sidebar.divider()
@@ -110,6 +128,7 @@ if selected_region != 'All':
 filtered_df = filtered_df[filtered_df['Poverty Risk Level'].isin(category)]
 filtered_df = filtered_df[filtered_df['MPI'] >= mpi_threshold]
 filtered_df = filtered_df[filtered_df['Intensity of Deprivation'] >= selected_intensity]
+filtered_df = filtered_df[filtered_df['Year'].between(selected_years[0], selected_years[1])]
 
 
 # ==========================================
