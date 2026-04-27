@@ -145,3 +145,48 @@ if view_mode == "Executive View":
     col4.metric("Avg Vulnerability", f"{avg_vuln:.1f}%")
 
     st.markdown("<br>", unsafe_allow_html=True)
+
+    if not filtered_df.empty:
+        # Pre-generate all charts with forced heights and tight margins
+        fig_main = px.bar(
+            filtered_df.nlargest(top_n, selected_metric), x='Admin 1 Name', y=selected_metric, color='Country', 
+            title=f'Highest {selected_metric} Regions (Top {top_n})'
+        )
+        fig_main.update_layout(height=250, margin=dict(t=35, b=0, l=0, r=0))
+
+        color_map = {'Extreme': '#d62728', 'High': '#ff7f0e', 'Moderate': '#2ca02c'}
+        fig_pie = px.pie(filtered_df, names='Poverty Risk Level', color='Poverty Risk Level', color_discrete_map=color_map, hole=0.4, title='Risk Segmentation')
+        fig_pie.update_traces(textposition='inside', textinfo='percent+label')
+        fig_pie.update_layout(height=250, margin=dict(t=35, b=0, l=0, r=0))
+
+        if len(filtered_df) > 2:
+            fig_scatter = px.scatter(
+                filtered_df, x='Headcount Ratio', y='MPI', color='Country', trendline='ols', title='Poverty Drivers (MPI vs Headcount)'
+            )
+            fig_scatter.update_layout(height=250, margin=dict(t=35, b=0, l=0, r=0))
+        else:
+            fig_scatter = None
+
+        map_data = filtered_df.groupby(['Country ISO3', 'Country'], as_index=False)[['MPI', 'Headcount Ratio', 'Intensity of Deprivation']].mean()
+        fig_map = px.choropleth(
+            map_data, locations="Country ISO3", color=selected_metric, hover_name="Country", color_continuous_scale=px.colors.sequential.Reds, title='Global Distribution'
+        )
+        fig_map.update_geos(projection_type="natural earth", showcoastlines=True)
+        fig_map.update_layout(height=300, margin={"r":0,"t":35,"l":0,"b":0})
+
+        # Row 2 -> main + pie
+        colA, colB = st.columns([2, 1])
+        with colA:
+            st.plotly_chart(fig_main, use_container_width=True)
+        with colB:
+            st.plotly_chart(fig_pie, use_container_width=True)
+
+        # Row 3 -> scatter + map
+        colC, colD = st.columns([1, 2])
+        with colC:
+            if fig_scatter:
+                st.plotly_chart(fig_scatter, use_container_width=True)
+            else:
+                st.info("Not enough data for trendlines.")
+        with colD:
+            st.plotly_chart(fig_map, use_container_width=True)
