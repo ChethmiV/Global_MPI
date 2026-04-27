@@ -121,12 +121,10 @@ if view_mode == "Executive View":
     # ONE-PAGE EXECUTIVE LAYOUT (COMPRESSED GRID)
     # ----------------------------------------
     
-    # CSS UI Polish: Reduce padding and hide Streamlit header
     st.subheader("High-Level Overview")
     st.markdown("""
     <style>
     .block-container {
-
         padding-bottom: 1rem;
     }
     </style>
@@ -147,49 +145,79 @@ if view_mode == "Executive View":
     st.markdown("<br>", unsafe_allow_html=True)
 
     if not filtered_df.empty:
-        # Pre-generate all charts with forced heights and tight margins
+        # Pre-generate all 5 charts with forced heights (240px) to fit on one page
+        
+        # 1. Bar Chart
         fig_main = px.bar(
             filtered_df.nlargest(top_n, selected_metric), x='Admin 1 Name', y=selected_metric, color='Country', 
-            title=f'Highest {selected_metric} Regions (Top {top_n})'
+            title=f'Top {top_n} Highest Risk'
         )
-        fig_main.update_layout(height=250, margin=dict(t=35, b=0, l=0, r=0))
+        fig_main.update_layout(height=240, margin=dict(t=35, b=0, l=0, r=0), showlegend=False)
 
+        # 2. Pie Chart
         color_map = {'Extreme': '#d62728', 'High': '#ff7f0e', 'Moderate': '#2ca02c'}
         fig_pie = px.pie(filtered_df, names='Poverty Risk Level', color='Poverty Risk Level', color_discrete_map=color_map, hole=0.4, title='Risk Segmentation')
         fig_pie.update_traces(textposition='inside', textinfo='percent+label')
-        fig_pie.update_layout(height=250, margin=dict(t=35, b=0, l=0, r=0))
+        fig_pie.update_layout(height=240, margin=dict(t=35, b=0, l=0, r=0), showlegend=False)
 
+        # 3. Scatter Plot
         if len(filtered_df) > 2:
             fig_scatter = px.scatter(
-                filtered_df, x='Headcount Ratio', y='MPI', color='Country', trendline='ols', title='Poverty Drivers (MPI vs Headcount)'
+                filtered_df, x='Headcount Ratio', y='MPI', color='Country', trendline='ols', title='MPI vs Headcount'
             )
-            fig_scatter.update_layout(height=250, margin=dict(t=35, b=0, l=0, r=0))
+            fig_scatter.update_layout(height=240, margin=dict(t=35, b=0, l=0, r=0), showlegend=False)
         else:
             fig_scatter = None
 
+        # 4. Correlation Heatmap
+        if len(filtered_df) > 1:
+            numeric_cols = ['MPI', 'Headcount Ratio', 'Intensity of Deprivation', 'Vulnerable to Poverty', 'In Severe Poverty']
+            fig_corr = px.imshow(filtered_df[numeric_cols].corr(), text_auto=".1f", aspect="auto", color_continuous_scale='RdBu_r', title='Metric Correlation')
+            fig_corr.update_layout(height=240, margin=dict(t=35, b=0, l=0, r=0))
+        else:
+            fig_corr = None
+
+        # 5. Map
         map_data = filtered_df.groupby(['Country ISO3', 'Country'], as_index=False)[['MPI', 'Headcount Ratio', 'Intensity of Deprivation']].mean()
         fig_map = px.choropleth(
             map_data, locations="Country ISO3", color=selected_metric, hover_name="Country", color_continuous_scale=px.colors.sequential.Reds, title='Global Distribution'
         )
         fig_map.update_geos(projection_type="natural earth", showcoastlines=True)
-        fig_map.update_layout(height=300, margin={"r":0,"t":35,"l":0,"b":0})
+        fig_map.update_layout(height=240, margin={"r":0,"t":35,"l":0,"b":0})
 
-        # Row 2 -> main + pie
-        colA, colB = st.columns([2, 1])
+        # ==========================================
+        # RENDER THE COMPRESSED GRID
+        # ==========================================
+
+        # Grid Row 1: Map (Wide) + Bar Chart (Narrow)
+        colA, colB = st.columns([1.5, 1])
         with colA:
-            st.plotly_chart(fig_main, use_container_width=True)
+            st.plotly_chart(fig_map, use_container_width=True)
         with colB:
-            st.plotly_chart(fig_pie, use_container_width=True)
+            st.plotly_chart(fig_main, use_container_width=True)
 
-        # Row 3 -> scatter + map
-        colC, colD = st.columns([1, 2])
+        # Grid Row 2: Pie + Scatter + Correlation (3 even columns)
+        colC, colD, colE = st.columns(3)
         with colC:
+            st.plotly_chart(fig_pie, use_container_width=True)
+        with colD:
             if fig_scatter:
                 st.plotly_chart(fig_scatter, use_container_width=True)
             else:
                 st.info("Not enough data for trendlines.")
-        with colD:
-            st.plotly_chart(fig_map, use_container_width=True)
+        with colE:
+            if fig_corr:
+                st.plotly_chart(fig_corr, use_container_width=True)
+            else:
+                st.info("Not enough data for correlation.")
+
+        # Grid Row 3: Mini Data Summary (The 6th Element)
+        st.markdown(f"**Top 5 Critical Regions Summary ({selected_metric})**")
+        st.dataframe(
+            filtered_df.nlargest(5, selected_metric)[['Country', 'Admin 1 Name', 'Poverty Risk Level', selected_metric, 'Intensity of Deprivation']], 
+            use_container_width=True, 
+            hide_index=True
+        )
 
     else:
         st.warning("No data available.")
@@ -203,11 +231,11 @@ if view_mode == "Executive View":
         if avg_metric > global_avg:
             st.write(f"• ⚠️ **Warning:** The selected regions are **above** the global average for {selected_metric} ({avg_metric:.4f} vs {global_avg:.4f}).")
         else:
-            st.write(f"•  **Positive:** The selected regions are **below** the global average for {selected_metric} ({avg_metric:.4f} vs {global_avg:.4f}).")
+            st.write(f"• **Positive:** The selected regions are **below** the global average for {selected_metric} ({avg_metric:.4f} vs {global_avg:.4f}).")
         
         worst_region = filtered_df.loc[filtered_df[selected_metric].idxmax()]
-        st.write(f"•  **Critical High-Risk Region Identified:** **{worst_region['Admin 1 Name']}** ({worst_region['Country']}) has the highest {selected_metric} in this selection.")
-        st.write("•  **Trend Insight:** Higher MPI is strongly driven by high deprivation intensity rather than just the population affected.")
+        st.write(f"• **Critical High-Risk Region Identified:** **{worst_region['Admin 1 Name']}** ({worst_region['Country']}) has the highest {selected_metric} in this selection.")
+        st.write("• **Trend Insight:** Higher MPI is strongly driven by high deprivation intensity rather than just the population affected.")
     else:
         st.write("Adjust your filters to generate insights.")
 
