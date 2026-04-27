@@ -392,3 +392,11 @@ else:
             ])
             fig_comp = px.bar(comp_df, x='Country', y='Value', color='Country', title=f"Direct Comparison: {selected_metric}")
             st.plotly_chart(fig_comp, use_container_width=True)
+
+    with tab7:
+        st.subheader("Sortable Database")
+        st.dataframe(filtered_df, use_container_width=True, hide_index=True)
+        
+        st.markdown("### Export Tools")
+        csv = filtered_df.to_csv(index=False).encode('utf-8')
+        st.download_button(label="📥 Download Data for Excel", data=csv, file_name='policymaker_mpi_data.csv', mime='text/csv')
