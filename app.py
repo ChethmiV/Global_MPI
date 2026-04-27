@@ -355,3 +355,13 @@ else:
                     st.success(f"✅ **Positive Insight:**\n\n**0%** of the selected regions fall into Extreme Poverty. Continued scaffolding is required for High and Moderate risk areas.")
         else:
             st.warning("No data available.")
+
+    with tab5:
+        st.subheader("Poverty Driver Correlation")
+        if len(filtered_df) > 1:
+            numeric_cols = ['MPI', 'Headcount Ratio', 'Intensity of Deprivation', 'Vulnerable to Poverty', 'In Severe Poverty']
+            corr_matrix = filtered_df[numeric_cols].corr()
+            fig_corr = px.imshow(corr_matrix, text_auto=".2f", aspect="auto", color_continuous_scale='RdBu_r', title="Statistical Correlation of Poverty Metrics")
+            st.plotly_chart(fig_corr, use_container_width=True, key="heatmap")
+        else:
+            st.warning("Not enough data to calculate correlations. Please select 'All' countries or adjust sliders.")
