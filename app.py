@@ -310,3 +310,24 @@ else:
             st.plotly_chart(fig_map, use_container_width=True, key="map_chart_tabs")
         else:
             st.warning("No data available.")
+
+    with tab3:
+        st.subheader("Poverty Drivers Breakdown")
+        st.markdown("Analyze whether poverty is driven more by the *number of people* affected (Headcount) or the *severity* of their poverty (Intensity).")
+        
+        if not filtered_df.empty and len(filtered_df) > 2:
+            fig_hc = px.scatter(
+                filtered_df, x='Headcount Ratio', y='MPI', color='Country', hover_name='Admin 1 Name',
+                trendline='ols', title='MPI vs. Headcount Ratio', labels={'Headcount Ratio': 'Headcount Ratio (%)', 'MPI': 'MPI Value'}
+            )
+            st.plotly_chart(fig_hc, use_container_width=True, key="scatter_hc")
+
+            st.info("**Insight:** Higher MPI is strongly driven by high deprivation intensity rather than just the population affected. The slope of the trendline helps identify how severe poverty compounding affects the overall index.")
+
+            fig_int = px.scatter(
+                filtered_df, x='Intensity of Deprivation', y='MPI', color='Country', hover_name='Admin 1 Name',
+                trendline='ols', title='MPI vs. Intensity of Deprivation', labels={'Intensity of Deprivation': 'Intensity of Deprivation (%)', 'MPI': 'MPI Value'}
+            )
+            st.plotly_chart(fig_int, use_container_width=True, key="scatter_int")
+        else:
+            st.warning("Not enough data to calculate trendlines. Please select 'All' countries or loosen your filter parameters.")
