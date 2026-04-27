@@ -228,3 +228,25 @@ else:
     col4.metric("Avg Vulnerability", f"{avg_vuln:.1f}%")
 
     st.divider()
+
+    # --- SECTION 2: Dynamic Insights Panel ---
+    st.subheader("💡 Policymaker Insights") 
+    if not filtered_df.empty:
+        
+        global_avg = df[selected_metric].mean()
+        if avg_metric > global_avg:
+            st.warning(f"⚠️ **Global Comparison:** The selected regions are **above** the global average for {selected_metric} ({avg_metric:.4f} vs {global_avg:.4f}).")
+        else:
+            st.success(f"**Global Comparison:** The selected regions are **below** the global average for {selected_metric} ({avg_metric:.4f} vs {global_avg:.4f}).")
+        
+        worst_region = filtered_df.loc[filtered_df[selected_metric].idxmax()]
+        best_region = filtered_df.loc[filtered_df[selected_metric].idxmin()]
+        
+        st.error(f"**Critical High-Risk Region Identified:** **{worst_region['Admin 1 Name']}** ({worst_region['Country']}) has the highest **{selected_metric}** in this selection at **{worst_region[selected_metric]:.4f}**.\n\n"
+                 f"*Causal Driver Analysis: This is likely driven by an Intensity of Deprivation of {worst_region['Intensity of Deprivation']:.1f}% and {worst_region['In Severe Poverty']:.1f}% of its population in severe poverty.*")
+        
+        st.success(f"**Lowest Risk:** **{best_region['Admin 1 Name']}** ({best_region['Country']}) reports the lowest **{selected_metric}** at **{best_region[selected_metric]:.4f}**.")
+    else:
+        st.warning("Adjust your filters to generate insights.")
+
+    st.divider()
