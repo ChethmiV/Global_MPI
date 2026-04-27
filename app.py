@@ -210,3 +210,21 @@ if view_mode == "Executive View":
         st.write("•  **Trend Insight:** Higher MPI is strongly driven by high deprivation intensity rather than just the population affected.")
     else:
         st.write("Adjust your filters to generate insights.")
+
+else:
+
+    # --- SECTION 1: Overview (Top KPIs) ---
+    st.subheader("High-Level Overview")
+    col1, col2, col3, col4 = st.columns(4)
+
+    total_regions = len(filtered_df)
+    avg_metric = filtered_df[selected_metric].mean() if not filtered_df.empty else 0
+    avg_severe = filtered_df['In Severe Poverty'].mean() if not filtered_df.empty else 0
+    avg_vuln = filtered_df['Vulnerable to Poverty'].mean() if not filtered_df.empty else 0
+
+    col1.metric("Total Regions Selected", f"{total_regions}")
+    col2.metric(f"Avg {selected_metric}", f"{avg_metric:.4f}") 
+    col3.metric("Avg Severe Poverty", f"{avg_severe:.1f}%")
+    col4.metric("Avg Vulnerability", f"{avg_vuln:.1f}%")
+
+    st.divider()
