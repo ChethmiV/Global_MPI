@@ -97,9 +97,9 @@ st.sidebar.button("🔄 Reset All Filters", on_click=reset_filters, use_containe
 st.sidebar.divider()
 st.sidebar.info("Done by Chethmi Narayange.   Data Source: Global MPI Dataset (2024)")
 
-# =========================================
+# ========================================
 # APPLY ALL SIDEBAR FILTERS LOGIC
-# =========================================
+# ========================================
 filtered_df = df.copy()
 
 if selected_country != 'All':
@@ -178,7 +178,7 @@ if view_mode == "Executive View":
             fig_corr = None
 
         # 5. Map
-        map_data = filtered_df.groupby(['Country ISO3', 'Country'], as_index=False)[['MPI', 'Headcount Ratio', 'Intensity of Deprivation']].mean()
+        map_data = filtered_df.groupby(['Country ISO3', 'Country'], as_index=False)[['MPI', 'Headcount Ratio', 'Intensity of Deprivation', 'Vulnerable to Poverty', 'In Severe Poverty']].mean()
         fig_map = px.choropleth(
             map_data, locations="Country ISO3", color=selected_metric, hover_name="Country", color_continuous_scale=px.colors.sequential.Reds, title='Global Distribution'
         )
@@ -213,8 +213,14 @@ if view_mode == "Executive View":
 
         # Grid Row 3: Mini Data Summary (The 6th Element)
         st.markdown(f"**Top 5 Critical Regions Summary ({selected_metric})**")
+        
+        # Dynamically build columns to prevent duplicates
+        summary_cols = ['Country', 'Admin 1 Name', 'Poverty Risk Level', selected_metric]
+        if selected_metric != 'Intensity of Deprivation':
+            summary_cols.append('Intensity of Deprivation')
+            
         st.dataframe(
-            filtered_df.nlargest(5, selected_metric)[['Country', 'Admin 1 Name', 'Poverty Risk Level', selected_metric, 'Intensity of Deprivation']], 
+            filtered_df.nlargest(5, selected_metric)[summary_cols], 
             use_container_width=True, 
             hide_index=True
         )
