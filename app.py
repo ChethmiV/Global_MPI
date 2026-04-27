@@ -250,3 +250,44 @@ else:
         st.warning("Adjust your filters to generate insights.")
 
     st.divider()
+
+    # --- SECTION 3: Visualizations & Analysis ---
+    tab1, tab2, tab3, tab4, tab5, tab6, tab7 = st.tabs([
+        "Regional Breakdown", 
+        "Global Heatmap", 
+        "Poverty Drivers", 
+        "Poverty Segmentation", 
+        "Driver Correlation", 
+        "Compare Nations",
+        "Data Explorer"
+    ])
+
+    with tab1:
+        st.subheader(f"Top {top_n} Regions by {selected_metric}")
+        if not filtered_df.empty:
+            top_regions = filtered_df.nlargest(top_n, selected_metric)
+            fig_bar = px.bar(
+                top_regions, 
+                x='Admin 1 Name', 
+                y=selected_metric, 
+                color='Country',
+                title=f'Highest {selected_metric} Regions (Top {top_n})',
+                labels={'Admin 1 Name': 'Region'}
+            )
+            st.plotly_chart(fig_bar, use_container_width=True, key="bar_chart")
+            
+            st.divider()
+            st.subheader(f"Regional Leaderboards: {selected_metric}")
+            col_worst, col_best = st.columns(2)
+            
+            with col_worst:
+                st.error("**Top 10 Highest Risk (Worst)**")
+                ranked_worst = filtered_df.sort_values(by=selected_metric, ascending=False)
+                st.dataframe(ranked_worst[['Country', 'Admin 1 Name', selected_metric]].head(10), use_container_width=True, hide_index=True)
+                
+            with col_best:
+                st.success("**Top 10 Lowest Risk (Best)**")
+                ranked_best = filtered_df.sort_values(by=selected_metric, ascending=True)
+                st.dataframe(ranked_best[['Country', 'Admin 1 Name', selected_metric]].head(10), use_container_width=True, hide_index=True)
+        else:
+            st.warning("No data available.")
