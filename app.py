@@ -95,7 +95,7 @@ def reset_filters():
 
 st.sidebar.button("🔄 Reset All Filters", on_click=reset_filters, use_container_width=True, type="primary")
 st.sidebar.divider()
-st.sidebar.info("Done by Chethmi Narayange. Data Source: Global MPI Dataset (2024)")
+st.sidebar.info("Done by Chethmi Narayange.   Data Source: Global MPI Dataset (2024)")
 
 # =========================================
 # APPLY ALL SIDEBAR FILTERS LOGIC
