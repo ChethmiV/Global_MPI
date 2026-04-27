@@ -331,3 +331,27 @@ else:
             st.plotly_chart(fig_int, use_container_width=True, key="scatter_int")
         else:
             st.warning("Not enough data to calculate trendlines. Please select 'All' countries or loosen your filter parameters.")
+
+    with tab4:
+        st.subheader("Poverty Risk Segmentation")
+        st.markdown("Categorizing regions into risk levels based on their MPI score to quickly identify the proportion of areas needing critical intervention.")
+        if not filtered_df.empty:
+            col_pie, col_insight = st.columns([2, 1])
+            with col_pie:
+                color_map = {'Extreme': '#d62728', 'High': '#ff7f0e', 'Moderate': '#2ca02c'}
+                fig_pie = px.pie(filtered_df, names='Poverty Risk Level', title='Proportion of Regions by Poverty Risk', color='Poverty Risk Level', color_discrete_map=color_map, hole=0.4)
+                fig_pie.update_traces(textposition='inside', textinfo='percent+label')
+                st.plotly_chart(fig_pie, use_container_width=True, key="pie_chart_tabs") 
+                
+            with col_insight:
+                st.markdown("<br><br>", unsafe_allow_html=True)
+                extreme_count = len(filtered_df[filtered_df['Poverty Risk Level'] == 'Extreme'])
+                total_count = len(filtered_df)
+                extreme_pct = (extreme_count / total_count * 100) if total_count > 0 else 0
+                
+                if extreme_pct > 0:
+                    st.error(f"🚨 **Critical Insight:**\n\n**{extreme_pct:.1f}%** of the selected regions fall into **Extreme Poverty** (MPI > 0.4). These {extreme_count} regions require immediate, targeted humanitarian intervention.")
+                else:
+                    st.success(f"✅ **Positive Insight:**\n\n**0%** of the selected regions fall into Extreme Poverty. Continued scaffolding is required for High and Moderate risk areas.")
+        else:
+            st.warning("No data available.")
