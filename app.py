@@ -291,3 +291,22 @@ else:
                 st.dataframe(ranked_best[['Country', 'Admin 1 Name', selected_metric]].head(10), use_container_width=True, hide_index=True)
         else:
             st.warning("No data available.")
+
+    with tab2:
+        st.subheader(f"Geospatial Distribution: {selected_metric}")
+        if not filtered_df.empty:
+            map_data = filtered_df.groupby(['Country ISO3', 'Country'], as_index=False)[['MPI', 'Headcount Ratio', 'Intensity of Deprivation', 'Vulnerable to Poverty', 'In Severe Poverty']].mean()
+            fig_map = px.choropleth(
+                map_data,
+                locations="Country ISO3",
+                color=selected_metric,
+                hover_name="Country",
+                hover_data=['MPI', 'Headcount Ratio', 'Intensity of Deprivation'],
+                color_continuous_scale=px.colors.sequential.Reds, 
+                title=f"Average {selected_metric} by Country"
+            )
+            fig_map.update_geos(projection_type="natural earth", showcoastlines=True)
+            fig_map.update_layout(margin={"r":0,"t":30,"l":0,"b":0})
+            st.plotly_chart(fig_map, use_container_width=True, key="map_chart_tabs")
+        else:
+            st.warning("No data available.")
