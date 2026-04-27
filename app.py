@@ -365,3 +365,30 @@ else:
             st.plotly_chart(fig_corr, use_container_width=True, key="heatmap")
         else:
             st.warning("Not enough data to calculate correlations. Please select 'All' countries or adjust sliders.")
+
+    with tab6:
+        st.subheader("Head-to-Head Country Comparison")
+        st.markdown(f"Select two countries to compare their national averages directly across **{selected_metric}**.")
+        
+        col_c1, col_c2 = st.columns(2)
+        all_countries = sorted(df['Country'].dropna().unique().tolist())
+        
+        country1 = col_c1.selectbox("Select First Country", all_countries, index=all_countries.index("Afghanistan") if "Afghanistan" in all_countries else 0)
+        country2 = col_c2.selectbox("Select Second Country", all_countries, index=all_countries.index("Zambia") if "Zambia" in all_countries else 1)
+        
+        df_c1 = df[df['Country'] == country1]
+        df_c2 = df[df['Country'] == country2]
+        
+        if not df_c1.empty and not df_c2.empty:
+            c1_mean = df_c1[selected_metric].mean()
+            c2_mean = df_c2[selected_metric].mean()
+            
+            col_c1.metric(f"{country1} {selected_metric}", f"{c1_mean:.4f}", delta=f"{c1_mean - c2_mean:.4f} vs {country2}", delta_color="inverse")
+            col_c2.metric(f"{country2} {selected_metric}", f"{c2_mean:.4f}", delta=f"{c2_mean - c1_mean:.4f} vs {country1}", delta_color="inverse")
+            
+            comp_df = pd.DataFrame([
+                {'Country': country1, 'Value': c1_mean},
+                {'Country': country2, 'Value': c2_mean}
+            ])
+            fig_comp = px.bar(comp_df, x='Country', y='Value', color='Country', title=f"Direct Comparison: {selected_metric}")
+            st.plotly_chart(fig_comp, use_container_width=True)
