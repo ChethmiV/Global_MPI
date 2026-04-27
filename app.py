@@ -23,8 +23,8 @@ def load_data():
     df['Poverty Risk Level'] = df['MPI'].apply(
         lambda x: 'Extreme' if x > 0.4 else ('High' if x > 0.2 else 'Moderate')
     )
-    # Extract the Year from the Start Date
-    df['Year'] = pd.to_datetime(df['Start Date']).dt.year
+    # Extract the Year from the End Date to capture the most recent 2024 data
+    df['Year'] = pd.to_datetime(df['End Date']).dt.year
     return df
 
 df = load_data()
