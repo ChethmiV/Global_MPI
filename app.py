@@ -190,3 +190,23 @@ if view_mode == "Executive View":
                 st.info("Not enough data for trendlines.")
         with colD:
             st.plotly_chart(fig_map, use_container_width=True)
+
+    else:
+        st.warning("No data available.")
+
+    st.divider()
+
+    # Insights Panel
+    st.subheader("Key Insights")
+    if not filtered_df.empty:
+        global_avg = df[selected_metric].mean()
+        if avg_metric > global_avg:
+            st.write(f"• ⚠️ **Warning:** The selected regions are **above** the global average for {selected_metric} ({avg_metric:.4f} vs {global_avg:.4f}).")
+        else:
+            st.write(f"•  **Positive:** The selected regions are **below** the global average for {selected_metric} ({avg_metric:.4f} vs {global_avg:.4f}).")
+        
+        worst_region = filtered_df.loc[filtered_df[selected_metric].idxmax()]
+        st.write(f"•  **Critical High-Risk Region Identified:** **{worst_region['Admin 1 Name']}** ({worst_region['Country']}) has the highest {selected_metric} in this selection.")
+        st.write("•  **Trend Insight:** Higher MPI is strongly driven by high deprivation intensity rather than just the population affected.")
+    else:
+        st.write("Adjust your filters to generate insights.")
